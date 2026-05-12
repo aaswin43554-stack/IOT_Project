@@ -3,13 +3,15 @@
  * Includes reading original Soil Moisture and new DFRobot Analog NPK Sensor
  */
 
-#include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
 
 // --- Configuration ---
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* serverEndpoint = "http://YOUR_SERVER_IP:3001/api/readings";
+const char *ssid = "Airtel_Aswin's Wifi";
+const char *password = "Aswin@2k06";
+const char *serverEndpoint =
+    "https://iot-project-vei9.onrender.com/api/readings";
 const String deviceId = "esp32-node-1";
 
 // --- Pin Definitions ---
@@ -19,17 +21,17 @@ const int P_PIN = 33; // Phosphorus Analog Pin
 const int K_PIN = 35; // Potassium Analog Pin
 
 // --- NPK Calibration Variables ---
-// Note: Depending on your specific analog NPK sensor, adjust the scaling factors!
-// Gravity analog NPK usually outputs 0-3V mapped to 0-1999 mg/kg.
-// 0V = 0 mg/kg, 3V = 1999 mg/kg
-const float VREF = 3.3; 
+// Note: Depending on your specific analog NPK sensor, adjust the scaling
+// factors! Gravity analog NPK usually outputs 0-3V mapped to 0-1999 mg/kg. 0V =
+// 0 mg/kg, 3V = 1999 mg/kg
+const float VREF = 3.3;
 const float MAX_MG_KG = 1999.0;
 const float MAX_VOLTAGE = 3.0; // Sensor max output
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  
+
   // Connect to WiFi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
@@ -44,7 +46,8 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     // 1. Read Soil Moisture (existing functionality)
     int moistureRaw = analogRead(MOISTURE_PIN);
-    // Convert 12-bit ADC (0-4095) to percentage (0-100%). You may need to invert depending on sensor.
+    // Convert 12-bit ADC (0-4095) to percentage (0-100%). You may need to
+    // invert depending on sensor.
     float moisturePct = map(moistureRaw, 0, 4095, 0, 100);
 
     // 2. Read N, P, K Values
@@ -52,7 +55,8 @@ void loop() {
     float pVal = readPhosphorus();
     float kVal = readPotassium();
 
-    // (Optional) Include other readings if you have them, e.g., DHT11 for air temp
+    // (Optional) Include other readings if you have them, e.g., DHT11 for air
+    // temp
     float soilTemp = 24.5; // Placeholder
     float airTemp = 28.0;  // Placeholder
     float humidity = 65.0; // Placeholder
@@ -60,7 +64,8 @@ void loop() {
     float ec = 1.2;        // Placeholder
 
     // 3. Send Data to Server
-    sendDataToServer(moisturePct, soilTemp, airTemp, humidity, ph, ec, nVal, pVal, kVal);
+    sendDataToServer(moisturePct, soilTemp, airTemp, humidity, ph, ec, nVal,
+                     pVal, kVal);
   } else {
     Serial.println("WiFi Disconnected. Reconnecting...");
     WiFi.disconnect();
@@ -95,10 +100,14 @@ float readPotassium() {
 }
 
 // --- Network Function ---
-void sendDataToServer(float moisture, float st, float at, float hum, float ph, float ec, float n, float p, float k) {
+void sendDataToServer(float moisture, float st, float at, float hum, float ph,
+                      float ec, float n, float p, float k) {
+  WiFiClientSecure client;
+  client.setInsecure(); // Skip certificate validation
+
   HTTPClient http;
-  
-  http.begin(serverEndpoint);
+
+  http.begin(client, serverEndpoint);
   http.addHeader("Content-Type", "application/json");
 
   // Construct JSON Payload
@@ -110,7 +119,7 @@ void sendDataToServer(float moisture, float st, float at, float hum, float ph, f
   jsonPayload += "\"humidityPct\":" + String(hum) + ",";
   jsonPayload += "\"ph\":" + String(ph) + ",";
   jsonPayload += "\"ecDsM\":" + String(ec) + ",";
-  
+
   // New NPK Fields
   jsonPayload += "\"nitrogen\":" + String(n) + ",";
   jsonPayload += "\"phosphorus\":" + String(p) + ",";
@@ -118,12 +127,13 @@ void sendDataToServer(float moisture, float st, float at, float hum, float ph, f
   jsonPayload += "}";
 
   int httpCode = http.POST(jsonPayload);
-  
+
   if (httpCode > 0) {
     Serial.printf("[HTTP] POST... code: %d\n", httpCode);
   } else {
-    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    Serial.printf("[HTTP] POST... failed, error: %s\n",
+                  http.errorToString(httpCode).c_str());
   }
-  
+
   http.end();
 }
