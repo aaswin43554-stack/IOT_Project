@@ -56,28 +56,44 @@ void loop() {
   Serial.print(humidity);
   Serial.println(" %");
 
-  // --- Send to Server ---
+  // --- Send to Server (with retry for Render cold-start) ---
   if (WiFi.status() == WL_CONNECTED) {
-    WiFiClientSecure client;
-    client.setInsecure();
-
-    HTTPClient http;
-    http.begin(client, serverName);
-    http.addHeader("Content-Type", "application/json");
-
     String jsonPayload = "{";
     jsonPayload += "\"moisture\": " + String(moistureRaw) + ",";
     jsonPayload += "\"temperature\": " + String(temperature, 1) + ",";
     jsonPayload += "\"humidity\": " + String(humidity, 1);
     jsonPayload += "}";
 
-    int httpResponseCode = http.POST(jsonPayload);
+    int httpResponseCode = -1;
+    int attempts = 0;
+
+    while (httpResponseCode == -1 && attempts < 3) {
+      attempts++;
+      WiFiClientSecure client;
+      client.setInsecure();
+      client.setTimeout(20); // 20 second SSL timeout
+
+      HTTPClient http;
+      http.begin(client, serverName);
+      http.setTimeout(20000); // 20 second HTTP timeout
+      http.addHeader("Content-Type", "application/json");
+
+      httpResponseCode = http.POST(jsonPayload);
+      http.end();
+
+      if (httpResponseCode == -1) {
+        Serial.print("Attempt ");
+        Serial.print(attempts);
+        Serial.println(" failed, retrying in 5s...");
+        delay(5000);
+      }
+    }
+
     Serial.print("HTTP Response code: ");
     Serial.println(httpResponseCode);
-    http.end();
   } else {
     Serial.println("WiFi Disconnected");
   }
 
-  delay(5000); // Send every 5 seconds
+  delay(5000); // Wait 5 seconds before next reading
 }
