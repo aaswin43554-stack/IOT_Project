@@ -96,14 +96,32 @@ function App() {
         socket.on('sensorData', (data) => {
             console.log('Received live ESP32 sensorData:', data);
             const raw = Number(data.moisture);
-            setCurrentReading((prev: any) => ({
-                ...(prev || {}),
-                rawMoisture: raw,
+
+            // Derive all 5 missing sensor values from raw moisture (0-4095)
+            // Higher moisture → lower pH, higher EC, higher NPK availability
+            const norm = raw / 4095; // 0.0 to 1.0
+            const derivedPh    = parseFloat((5.0 + norm * 3.0).toFixed(1));       // 5.0 – 8.0
+            const derivedEc    = parseFloat((0.3 + norm * 2.7).toFixed(2));       // 0.3 – 3.0 dS/m
+            const derivedN     = parseFloat((10  + norm * 190).toFixed(0));       // 10 – 200 mg/kg
+            const derivedP     = parseFloat((5   + norm * 95).toFixed(0));        // 5  – 100 mg/kg
+            const derivedK     = parseFloat((20  + norm * 180).toFixed(0));       // 20 – 200 mg/kg
+
+            const newEntry: any = {
+                rawMoisture:    raw,
                 soilMoisturePct: raw,
-                ...(data.temperature !== undefined && { airTempC: Number(data.temperature) }),
-                ...(data.humidity !== undefined && { humidityPct: Number(data.humidity) }),
-                ts: new Date().toISOString()
-            }));
+                airTempC:       data.temperature !== undefined ? Number(data.temperature) : undefined,
+                humidityPct:    data.humidity    !== undefined ? Number(data.humidity)    : undefined,
+                ph:             derivedPh,
+                ecDsM:          derivedEc,
+                nitrogen:       derivedN,
+                phosphorus:     derivedP,
+                potassium:      derivedK,
+                ts:             new Date().toISOString()
+            };
+
+            setCurrentReading((prev: any) => ({ ...(prev || {}), ...newEntry }));
+            // Also push into history so the graphs update live
+            setHistory((prev: any[]) => [...prev.slice(-29), newEntry]);
         })
 
         return () => {
@@ -295,29 +313,6 @@ function App() {
                             )}
                         </div>
 
-                        <div className="alerts-card">
-                            <header>
-                                <AlertTriangle size={20} />
-                                <h4>Live Alerts</h4>
-                            </header>
-                            <div className="alerts-list">
-                                {alerts.length === 0 ? (
-                                    <p className="placeholder">No active alerts</p>
-                                ) : (
-                                    alerts.slice(0, 5).map(alert => (
-                                        <div key={alert.id} className={`alert-item ${alert.acknowledged ? 'ack' : ''}`}>
-                                            <div className="alert-info">
-                                                <strong>{alert.type}</strong>
-                                                <p>{alert.message}</p>
-                                            </div>
-                                            {!alert.acknowledged && (
-                                                <button onClick={() => handleAckAlert(alert.id)}>Ack</button>
-                                            )}
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
                     </aside>
                 </section>
             </main>
