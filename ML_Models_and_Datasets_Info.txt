@@ -1,0 +1,55 @@
+Machine Learning Models & Datasets Information
+================================================
+This document outlines the modeled logic and data used in the Soil Monitoring and Crop Recommendation project.
+
+1. Current Model Implementation
+-------------------------------
+Currently, the project does **NOT** use a trained Machine Learning model. 
+Instead, it uses a **Rule-Based System (Heuristic Algorithm)** implemented in `server/src/services/recommendationService.js`.
+This system provides crop recommendations based on conditional statements evaluating specific soil parameters:
+- **pH (Acidity/Alkalinity)**
+- **EC (Electrical Conductivity / Salinity)**
+- **Moisture**
+
+Example Logic:
+- If pH is 6.0-7.5 and EC is low -> Returns: Rice, Maize, Groundnut
+- If pH < 6.0 (Acidic) -> Returns: Tea, Coffee, Rubber
+- If EC >= 1.0 (Saline) -> Returns: Coconut, Cotton, Barley
+
+2. Current Dataset Used
+-----------------------
+Dataset File: `data/soil_dataset.csv`
+- This dataset contains simulated time-series IoT sensor data.
+- The Device ID is labeled `kaggle-device-1`, indicating it may be inspired by or sourced from a Kaggle dataset for soil monitoring.
+- Features included:
+  - `ts` (Timestamp)
+  - `deviceId`
+  - `soilMoisture`
+  - `soilTemp`
+  - `ph`
+
+------------------------------------------------
+
+3. Recommended ML Models & Datasets (For Presentation / Future Implementation)
+------------------------------------------------------------------------------
+If you need to present an ML architecture or upgrade the system to use actual Machine Learning, here is what you can present:
+
+A. Machine Learning Models to Train
+- **Random Forest Classifier**: Best for tabular data like soil metrics. It handles non-linear relationships well and is highly interpretable.
+- **XGBoost / LightGBM**: Gradient boosting models that often yield the highest accuracy for crop prediction datasets.
+- **Support Vector Machines (SVM)**: Good for classifying crops based on strict boundaries of soil parameters.
+- **Deep Learning (ANN)**: An Artificial Neural Network could be used if the dataset is very large and complex, though it's often overkill for standard crop recommendation based on a few metrics.
+
+B. Datasets to Use for Training
+To train the above algorithms, you would need a dataset containing historical soil data mapped to the ideal crops.
+- **Kaggle Crop Recommendation Dataset**: 
+  - *Link:* https://www.kaggle.com/datasets/atharvaingle/crop-recommendation-dataset
+  - *Features:* Nitrogen (N), Phosphorous (P), Potassium (K), Temperature, Humidity, pH, Rainfall.
+  - *Target Label:* Crop type (e.g., rice, maize, chickpea, kidneybeans, pigeonpeas).
+- **Indian Agriculture Crop Production Dataset**: Used alongside soil data to map regions and soil types to yields.
+
+C. How It Would Work
+1. Train the Random Forest or XGBoost model on the Kaggle Crop Recommendation dataset using Python (Scikit-Learn).
+2. Export the trained model as a `.pkl` or `.joblib` file.
+3. Expose the model using a Python API (FastAPI or Flask).
+4. Have your Node.js server call the Python API with the real-time sensor data (`soilMoisture`, `soilTemp`, `ph`) to get the dynamically predicted crop.

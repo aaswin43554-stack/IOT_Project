@@ -1,0 +1,50 @@
+﻿
+> server@1.0.0 ingest
+> node scripts/ingest.js
+
+Processing C:\Users\aaswi\OneDrive\Desktop\Work\mini project\data\soil_dataset.csv...
+Found 5 rows. Normalizing...
+Clearing existing data...
+Delete failed or not supported by mock, continuing...
+Inserting readings...
+Ingestion complete!
+node.exe : C:\Users\aaswi\
+OneDrive\Desktop\Work\mini
+ project\server\scripts\in
+gest.js:90
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpeci    fied: 
+(C:\Users\a    
+aswi\...ts\ingest    
+.js:90:String) []    , 
+RemoteException
+    + FullyQualifiedE    
+rrorId : NativeCo    
+mmandError
+ 
+        await 
+prisma.$disconnect();
+                     ^
+
+TypeError: 
+prisma.$disconnect is not 
+a function
+    at C:\Users\aaswi\OneD
+rive\Desktop\Work\mini pro
+ject\server\scripts\ingest
+.js:90:22
+    at <anonymous>
+    at process.processTick
+sAndRejections (node:inter
+nal/process/task_queues:10
+4:5)
+
+Node.js v24.14.0

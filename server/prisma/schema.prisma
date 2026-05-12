@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Reading {
+  id              Int      @id @default(autoincrement())
+  ts              DateTime @default(now())
+  deviceId        String
+  soilMoisturePct Float
+  soilTempC       Float
+  airTempC        Float
+  humidityPct     Float
+  ph              Float
+  ecDsM           Float
+  nitrogen        Float?
+  phosphorus      Float?
+  potassium       Float?
+
+  @@index([deviceId, ts])
+}
+
+model Alert {
+  id           Int      @id @default(autoincrement())
+  ts           DateTime @default(now())
+  deviceId     String
+  type         String   // TEMP_CRITICAL, HUMIDITY_LOW, etc.
+  severity     String   // low, medium, high
+  message      String
+  acknowledged Boolean  @default(false)
+  lastSentAt   DateTime?
+
+  @@index([deviceId, ts])
+}
+
+model Recipient {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  isEnabled Boolean @default(true)
+}
