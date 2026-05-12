@@ -193,3 +193,35 @@
     bottom: -150px;
     left: -150px;
 }
+
+/* Auth feedback banners */
+.auth-error,
+.auth-success {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: -0.5rem;
+}
+
+.auth-error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+}
+
+.auth-success {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #6ee7b7;
+}
+
+.auth-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

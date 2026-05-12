@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Leaf, Lock, Mail, User, ArrowRight } from 'lucide-react';
+import { Leaf, Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
 import SoilBackground from '../components/SoilBackground';
+import axios from 'axios';
 
 interface SignupProps {
-    onSignup: () => void;
+    onSignup: (user: { name: string; email: string }) => void;
     onSwitchToLogin: () => void;
 }
 
@@ -11,12 +12,27 @@ const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate authentication registration
-        if (name && email && password) {
-            onSignup();
+        setError('');
+        setSuccess('');
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await axios.post('/api/auth/signup', { name, email, password });
+            setSuccess('Account created! A welcome email has been sent. Redirecting...');
+            setTimeout(() => onSignup(res.data), 2000);
+        } catch (err: any) {
+            setError(err?.response?.data?.error || 'Signup failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -30,6 +46,20 @@ const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => {
                     <h2>Create an Account</h2>
                     <p>Join us to monitor your soil health in real-time</p>
                 </div>
+
+                {error && (
+                    <div className="auth-error">
+                        <AlertCircle size={16} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                {success && (
+                    <div className="auth-success">
+                        <CheckCircle size={16} />
+                        <span>{success}</span>
+                    </div>
+                )}
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="input-group">
@@ -66,7 +96,7 @@ const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => {
                             <Lock size={18} className="input-icon" />
                             <input
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="At least 6 characters"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -74,8 +104,8 @@ const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => {
                         </div>
                     </div>
 
-                    <button type="submit" className="auth-submit">
-                        Sign Up <ArrowRight size={18} />
+                    <button type="submit" className="auth-submit" disabled={loading}>
+                        {loading ? 'Creating account...' : <> Sign Up <ArrowRight size={18} /> </>}
                     </button>
                 </form>
 

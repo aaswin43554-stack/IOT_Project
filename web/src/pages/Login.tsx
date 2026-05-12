@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
-import { Leaf, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Leaf, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import SoilBackground from '../components/SoilBackground';
+import axios from 'axios';
 
 interface LoginProps {
-    onLogin: () => void;
+    onLogin: (user: { name: string; email: string }) => void;
     onSwitchToSignup: () => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToSignup }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate authentication check
-        if (email && password) {
-            onLogin();
+        setError('');
+        setLoading(true);
+        try {
+            const res = await axios.post('/api/auth/login', { email, password });
+            onLogin(res.data);
+        } catch (err: any) {
+            setError(err?.response?.data?.error || 'Login failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -29,6 +38,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToSignup }) => {
                     <h2>Welcome to Soil Health Intelligence</h2>
                     <p>Enter your credentials to access your dashboard</p>
                 </div>
+
+                {error && (
+                    <div className="auth-error">
+                        <AlertCircle size={16} />
+                        <span>{error}</span>
+                    </div>
+                )}
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="input-group">
@@ -59,8 +75,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToSignup }) => {
                         </div>
                     </div>
 
-                    <button type="submit" className="auth-submit">
-                        Sign In <ArrowRight size={18} />
+                    <button type="submit" className="auth-submit" disabled={loading}>
+                        {loading ? 'Signing in...' : <> Sign In <ArrowRight size={18} /> </>}
                     </button>
                 </form>
 

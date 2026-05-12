@@ -10,8 +10,9 @@ const readingsRouter = require('./routes/readings');
 const alertsRouter = require('./routes/alerts');
 const replayRouter = require('./routes/replay');
 const recommendationRouter = require('./routes/recommendation');
+const authRouter = require('./routes/auth');
 const { initReplayService } = require('./services/replayService');
-const { sendStatusReport } = require('./services/emailService');
+const { sendStatusReport, sendCriticalMoistureAlert } = require('./services/emailService');
 
 dotenv.config();
 
@@ -29,10 +30,7 @@ const io = new Server(server, {
 const prisma = new PrismaClient();
 const port = process.env.PORT || 3001;
 
-app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 const path = require('path');
@@ -42,12 +40,21 @@ app.use('/api/readings', readingsRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/replay', replayRouter);
 app.use('/api/recommendation', recommendationRouter);
+app.use('/api/auth', authRouter);
 
 app.post('/api/sensor', (req, res) => {
     const { moisture, temperature, humidity } = req.body;
     if (moisture !== undefined) {
-        console.log(`Received from ESP32 → Moisture: ${moisture}, Temp: ${temperature}°C, Humidity: ${humidity}%`);
-        io.emit('sensorData', { moisture, temperature, humidity });
+        const raw = Number(moisture);
+        console.log(`Received from ESP32 → Moisture: ${raw}, Temp: ${temperature}°C, Humidity: ${humidity}%`);
+        io.emit('sensorData', { moisture: raw, temperature, humidity });
+
+        // Send critical alert email if moisture is very dry (raw >= 3500)
+        if (raw >= 3500) {
+            console.log('CRITICAL moisture detected! Sending alert emails...');
+            sendCriticalMoistureAlert(raw).catch(err => console.error('Alert email failed:', err));
+        }
+
         res.status(200).json({ success: true, message: 'Data received and broadcasted' });
     } else {
         res.status(400).json({ success: false, message: 'Missing moisture value' });
