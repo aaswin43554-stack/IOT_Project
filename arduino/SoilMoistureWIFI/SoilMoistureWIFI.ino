@@ -26,14 +26,29 @@ void setup() {
 }
 
 void loop() {
+  // --- DIAGNOSTIC: Read 5 samples and print all ---
+  Serial.println("--- ADC Diagnostic ---");
+  for (int i = 0; i < 5; i++) {
+    int raw = analogRead(sensorPin);
+    float voltage = (raw / 4095.0) * 3.3;
+    Serial.print("  Sample ");
+    Serial.print(i + 1);
+    Serial.print(": Raw=");
+    Serial.print(raw);
+    Serial.print("  Voltage=");
+    Serial.print(voltage, 3);
+    Serial.println("V");
+    delay(100);
+  }
+
   if (WiFi.status() == WL_CONNECTED) {
     int sensorValue = analogRead(sensorPin);
 
-    Serial.print("Soil Moisture Raw Value: ");
+    Serial.print("Sending value: ");
     Serial.println(sensorValue);
 
     WiFiClientSecure client;
-    client.setInsecure(); // Skip SSL certificate validation
+    client.setInsecure();
 
     HTTPClient http;
     http.begin(client, serverName);
@@ -43,17 +58,12 @@ void loop() {
 
     int httpResponseCode = http.POST(jsonPayload);
 
-    if (httpResponseCode > 0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-    } else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
     http.end();
   } else {
     Serial.println("WiFi Disconnected");
   }
 
-  delay(5000); // Wait 5 seconds before the next reading
+  delay(5000);
 }
