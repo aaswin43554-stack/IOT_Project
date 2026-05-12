@@ -34,6 +34,14 @@ db.exec(`
     email TEXT UNIQUE,
     isEnabled BOOLEAN DEFAULT 1
   );
+
+  CREATE TABLE IF NOT EXISTS User (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 const prisma = {
@@ -108,6 +116,25 @@ const prisma = {
             const stmt = db.prepare('INSERT INTO Recipient (email, isEnabled) VALUES (?, ?)');
             stmt.run(data.email, data.isEnabled ? 1 : 0);
             return data;
+        }
+    },
+    user: {
+        findUnique: ({ where }) => {
+            if (where.email) {
+                return db.prepare('SELECT * FROM User WHERE email = ?').get(where.email) || null;
+            }
+            if (where.id) {
+                return db.prepare('SELECT * FROM User WHERE id = ?').get(where.id) || null;
+            }
+            return null;
+        },
+        findMany: () => {
+            return db.prepare('SELECT * FROM User').all();
+        },
+        create: ({ data }) => {
+            const stmt = db.prepare('INSERT INTO User (name, email, password) VALUES (?, ?, ?)');
+            const info = stmt.run(data.name, data.email, data.password);
+            return { id: info.lastInsertRowid, ...data, createdAt: new Date() };
         }
     }
 };
