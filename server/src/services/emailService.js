@@ -9,7 +9,13 @@ const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: false,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    auth: { 
+        user: process.env.SMTP_USER, 
+        pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : undefined
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
 });
 
 async function sendMail(to, subject, html) {
