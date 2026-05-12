@@ -96,12 +96,12 @@ function App() {
         socket.on('sensorData', (data) => {
             console.log('Received live ESP32 sensorData:', data);
             const raw = Number(data.moisture);
-            const pct = Math.max(0, Math.min(100, (raw / 4095) * 100)); // Convert 0-4095 to 0-100%
-            setCurrentReading((prev: any) => prev ? {
-                ...prev,
-                soilMoisturePct: Number(pct.toFixed(1)),
+            setCurrentReading((prev: any) => ({
+                ...(prev || {}),
+                rawMoisture: raw,
+                soilMoisturePct: raw, // Overwrite percentage with raw value for UI
                 ts: new Date().toISOString()
-            } : null);
+            }));
         })
 
         return () => {
@@ -209,28 +209,11 @@ function App() {
                         <h1>Soil Health Intelligence</h1>
                         <p>Real-time analytics & automated monitoring</p>
                     </div>
-                    <div className="replay-controls">
-                        <button className="btn-icon" onClick={() => handleReplayAction(replayStatus.isPlaying ? 'pause' : 'start')}>
-                            {replayStatus.isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                        </button>
-                        <button className="btn-icon" onClick={() => handleReplayAction('reset')}>
-                            <RotateCcw size={18} />
-                        </button>
-                        <select
-                            value={replayStatus.speed}
-                            onChange={(e) => handleReplayAction('speed', { speed: parseInt(e.target.value) })}
-                            className="speed-select"
-                        >
-                            <option value={2000}>1x</option>
-                            <option value={1000}>2x</option>
-                            <option value={400}>5x</option>
-                        </select>
-                    </div>
                 </header>
 
                 <section className="stats-grid">
                     {[
-                        { label: 'Soil Moisture', value: `${currentReading?.soilMoisturePct?.toFixed(1) || '--'}%`, icon: <Droplets />, color: '#3b82f6', status: currentReading?.soilMoisturePct < 30 ? 'CRITICAL' : 'OK' },
+                        { label: 'Soil Moisture', value: currentReading?.rawMoisture !== undefined ? currentReading.rawMoisture : (currentReading?.soilMoisturePct !== undefined ? currentReading.soilMoisturePct : '--'), icon: <Droplets />, color: '#3b82f6', status: 'OK' },
                         { label: 'Soil Temperature', value: `${currentReading?.soilTempC?.toFixed(1) || '--'}°C`, icon: <Thermometer />, color: '#ef4444', status: 'OK' },
                         { label: 'Air Humidity', value: `${currentReading?.humidityPct?.toFixed(1) || '--'}%`, icon: <Wind />, color: '#10b981', status: currentReading?.humidityPct < 30 || currentReading?.humidityPct > 80 ? 'WARN' : 'OK' },
                         { label: 'Soil pH', value: currentReading?.ph?.toFixed(1) || '--', icon: <FlaskConical />, color: '#a855f7', status: currentReading?.ph < 5.5 || currentReading?.ph > 7.5 ? 'WARN' : 'OK' },
