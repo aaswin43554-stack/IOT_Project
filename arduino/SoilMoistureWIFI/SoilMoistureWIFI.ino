@@ -9,7 +9,7 @@ const char *password = "Aswin@2k06";
 // https://soil-monitoring-system-your-app.onrender.com)
 const char *serverName = "https://iot-project-vei9.onrender.com/api/sensor";
 
-const int sensorPin = 4; // GPIO 4
+const int sensorPin = 34; // GPIO 34 - ADC1 pin, safe to use with WiFi
 
 void setup() {
   Serial.begin(115200);
