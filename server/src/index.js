@@ -49,13 +49,13 @@ app.post('/api/sensor', (req, res) => {
         console.log(`Received from ESP32 → Moisture: ${raw}, Temp: ${temperature}°C, Humidity: ${humidity}%`);
         io.emit('sensorData', { moisture: raw, temperature, humidity });
 
-        // Send critical alert email if moisture goes above 300
+        // Send critical alert email if moisture goes above 3000
         // Adding a 30-minute cooldown so we don't spam the user's inbox every 5 seconds
-        if (raw >= 300) {
+        if (raw >= 3000) {
             const now = Date.now();
             const lastAlertTime = global.lastMoistureAlertTime || 0;
             if (now - lastAlertTime > 30 * 60 * 1000) { // 30 minutes
-                console.log('CRITICAL moisture detected (>300)! Sending alert emails...');
+                console.log('CRITICAL moisture detected (>3000)! Sending alert emails...');
                 sendCriticalMoistureAlert(raw).catch(err => console.error('Alert email failed:', err));
                 global.lastMoistureAlertTime = now;
             }
