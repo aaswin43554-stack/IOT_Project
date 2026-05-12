@@ -45,7 +45,7 @@ ChartJS.register(
     Filler
 )
 
-const socket = io('http://localhost:3001')
+const socket = io(import.meta.env.PROD ? undefined : 'http://localhost:3001')
 
 function App() {
     const [view, setView] = useState<'login' | 'signup' | 'dashboard' | 'admin'>('login')

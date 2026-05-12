@@ -35,11 +35,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
+const path = require('path');
+
 // Routes
 app.use('/api/readings', readingsRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/replay', replayRouter);
 app.use('/api/recommendation', recommendationRouter);
+
+// Serve static frontend in production
+app.use(express.static(path.join(__dirname, '../../web/dist')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
+});
+
 
 // Socket.IO
 io.on('connection', (socket) => {

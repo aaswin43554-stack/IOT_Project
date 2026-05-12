@@ -11,7 +11,7 @@
     "install:all": "npm install && cd server && npm install && cd ../web && npm install",
     "lint": "eslint . && cd server && npm run lint && cd ../web && npm run lint",
     "format": "prettier --write .",
-    "build": "cd web && npm install && npm run build",
+    "build": "cd server && npm install && cd ../web && npm install && npm run build",
     "start": "cd server && npm start"
   },
   "devDependencies": {
