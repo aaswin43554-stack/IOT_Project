@@ -44,10 +44,10 @@ app.use('/api/replay', replayRouter);
 app.use('/api/recommendation', recommendationRouter);
 
 app.post('/api/sensor', (req, res) => {
-    const { moisture } = req.body;
+    const { moisture, temperature, humidity } = req.body;
     if (moisture !== undefined) {
-        console.log('Received live moisture from ESP32:', moisture);
-        io.emit('sensorData', { moisture });
+        console.log(`Received from ESP32 → Moisture: ${moisture}, Temp: ${temperature}°C, Humidity: ${humidity}%`);
+        io.emit('sensorData', { moisture, temperature, humidity });
         res.status(200).json({ success: true, message: 'Data received and broadcasted' });
     } else {
         res.status(400).json({ success: false, message: 'Missing moisture value' });

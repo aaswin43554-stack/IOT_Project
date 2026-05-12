@@ -1,18 +1,22 @@
+#include <DHT.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
 const char *ssid = "Airtel_Aswin's Wifi";
 const char *password = "Aswin@2k06";
-
-// Replace with your Render URL (e.g.
-// https://soil-monitoring-system-your-app.onrender.com)
 const char *serverName = "https://iot-project-vei9.onrender.com/api/sensor";
 
-const int sensorPin = 34; // GPIO 34 - ADC1 pin, safe to use with WiFi
+// --- Pin Definitions ---
+const int MOISTURE_PIN = 34; // GPIO 34 - ADC1, soil moisture analog output
+const int DHT_PIN = 4;       // GPIO 4 - DHT11 digital data pin
+const int DHT_TYPE = DHT11;
+
+DHT dht(DHT_PIN, DHT_TYPE);
 
 void setup() {
   Serial.begin(115200);
+  dht.begin();
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
@@ -20,33 +24,39 @@ void setup() {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nConnected to WiFi");
+  Serial.println("\nConnected to WiFi!");
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 }
 
 void loop() {
-  // --- DIAGNOSTIC: Read 5 samples and print all ---
-  Serial.println("--- ADC Diagnostic ---");
-  for (int i = 0; i < 5; i++) {
-    int raw = analogRead(sensorPin);
-    float voltage = (raw / 4095.0) * 3.3;
-    Serial.print("  Sample ");
-    Serial.print(i + 1);
-    Serial.print(": Raw=");
-    Serial.print(raw);
-    Serial.print("  Voltage=");
-    Serial.print(voltage, 3);
-    Serial.println("V");
-    delay(100);
+  // --- Read Soil Moisture ---
+  int moistureRaw = analogRead(MOISTURE_PIN);
+
+  // --- Read DHT11 ---
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature(); // Celsius
+
+  // Check if DHT11 reading failed
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("DHT11 read failed! Check wiring.");
+    humidity = 0.0;
+    temperature = 0.0;
   }
 
+  // --- Print to Serial Monitor ---
+  Serial.println("-----------------------------");
+  Serial.print("Soil Moisture (raw): ");
+  Serial.println(moistureRaw);
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C");
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println(" %");
+
+  // --- Send to Server ---
   if (WiFi.status() == WL_CONNECTED) {
-    int sensorValue = analogRead(sensorPin);
-
-    Serial.print("Sending value: ");
-    Serial.println(sensorValue);
-
     WiFiClientSecure client;
     client.setInsecure();
 
@@ -54,10 +64,13 @@ void loop() {
     http.begin(client, serverName);
     http.addHeader("Content-Type", "application/json");
 
-    String jsonPayload = "{\"moisture\": " + String(sensorValue) + "}";
+    String jsonPayload = "{";
+    jsonPayload += "\"moisture\": " + String(moistureRaw) + ",";
+    jsonPayload += "\"temperature\": " + String(temperature, 1) + ",";
+    jsonPayload += "\"humidity\": " + String(humidity, 1);
+    jsonPayload += "}";
 
     int httpResponseCode = http.POST(jsonPayload);
-
     Serial.print("HTTP Response code: ");
     Serial.println(httpResponseCode);
     http.end();
@@ -65,5 +78,5 @@ void loop() {
     Serial.println("WiFi Disconnected");
   }
 
-  delay(5000);
+  delay(5000); // Send every 5 seconds
 }

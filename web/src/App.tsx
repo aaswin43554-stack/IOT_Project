@@ -99,7 +99,9 @@ function App() {
             setCurrentReading((prev: any) => ({
                 ...(prev || {}),
                 rawMoisture: raw,
-                soilMoisturePct: raw, // Overwrite percentage with raw value for UI
+                soilMoisturePct: raw,
+                ...(data.temperature !== undefined && { airTempC: Number(data.temperature) }),
+                ...(data.humidity !== undefined && { humidityPct: Number(data.humidity) }),
                 ts: new Date().toISOString()
             }));
         })
@@ -213,9 +215,9 @@ function App() {
 
                 <section className="stats-grid">
                     {[
-                        { label: 'Soil Moisture', value: currentReading?.rawMoisture !== undefined ? currentReading.rawMoisture : (currentReading?.soilMoisturePct !== undefined ? currentReading.soilMoisturePct : '--'), icon: <Droplets />, color: '#3b82f6', status: 'OK' },
-                        { label: 'Soil Temperature', value: `${currentReading?.soilTempC?.toFixed(1) || '--'}°C`, icon: <Thermometer />, color: '#ef4444', status: 'OK' },
-                        { label: 'Air Humidity', value: `${currentReading?.humidityPct?.toFixed(1) || '--'}%`, icon: <Wind />, color: '#10b981', status: currentReading?.humidityPct < 30 || currentReading?.humidityPct > 80 ? 'WARN' : 'OK' },
+                        { label: 'Soil Moisture (Raw)', value: currentReading?.rawMoisture !== undefined ? currentReading.rawMoisture : (currentReading?.soilMoisturePct !== undefined ? currentReading.soilMoisturePct : '--'), icon: <Droplets />, color: '#3b82f6', status: 'OK' },
+                        { label: 'Air Temperature', value: currentReading?.airTempC !== undefined ? `${Number(currentReading.airTempC).toFixed(1)}°C` : '--', icon: <Thermometer />, color: '#ef4444', status: 'OK' },
+                        { label: 'Air Humidity', value: currentReading?.humidityPct !== undefined ? `${Number(currentReading.humidityPct).toFixed(1)}%` : '--', icon: <Wind />, color: '#10b981', status: (currentReading?.humidityPct < 30 || currentReading?.humidityPct > 80) ? 'WARN' : 'OK' },
                         { label: 'Soil pH', value: currentReading?.ph?.toFixed(1) || '--', icon: <FlaskConical />, color: '#a855f7', status: currentReading?.ph < 5.5 || currentReading?.ph > 7.5 ? 'WARN' : 'OK' },
                         { label: 'Salinity (EC)', value: `${currentReading?.ecDsM?.toFixed(2) || '--'} dS/m`, icon: <Waves />, color: '#f59e0b', status: currentReading?.ecDsM > 2.0 ? 'CRITICAL' : 'OK' },
                         { label: 'Nitrogen (N)', value: `${currentReading?.nitrogen?.toFixed(0) || '--'} mg/kg`, icon: <Leaf />, color: '#34d399', status: currentReading?.nitrogen < 20 ? 'WARN' : 'OK' },
