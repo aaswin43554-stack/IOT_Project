@@ -7,7 +7,7 @@ const char *password = "Aswin@2k06";
 
 // Replace with your Render URL (e.g.
 // https://soil-monitoring-system-your-app.onrender.com)
-const char *serverName = "https://iot-project-vei9.onrender.com";
+const char *serverName = "https://iot-project-vei9.onrender.com/api/sensor";
 
 const int sensorPin = 4; // GPIO 4
 

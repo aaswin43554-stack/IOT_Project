@@ -10,8 +10,7 @@
 // --- Configuration ---
 const char *ssid = "Airtel_Aswin's Wifi";
 const char *password = "Aswin@2k06";
-const char *serverEndpoint =
-    "https://iot-project-vei9.onrender.com/api/readings";
+const char *serverEndpoint = "https://iot-project-vei9.onrender.com/api/readings";
 const String deviceId = "esp32-node-1";
 
 // --- Pin Definitions ---
