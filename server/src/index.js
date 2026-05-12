@@ -42,31 +42,6 @@ app.use('/api/replay', replayRouter);
 app.use('/api/recommendation', recommendationRouter);
 app.use('/api/auth', authRouter);
 
-app.get('/api/test-email', async (req, res) => {
-    try {
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: false,
-            auth: { 
-                user: process.env.SMTP_USER, 
-                pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : undefined
-            },
-            tls: { rejectUnauthorized: false }
-        });
-        const info = await transporter.sendMail({
-            from: `"Soil Health" <${process.env.SMTP_USER}>`,
-            to: process.env.SMTP_USER || 'aaswin43554@gmail.com',
-            subject: 'Render SMTP Diagnostic Test',
-            text: 'If you see this, the SMTP transporter works!'
-        });
-        res.json({ success: true, message: 'Sent!', info, envUser: process.env.SMTP_USER });
-    } catch (err) {
-        res.json({ success: false, error: err.message, stack: err.stack, envUser: process.env.SMTP_USER });
-    }
-});
-
 app.post('/api/sensor', (req, res) => {
     const { moisture, temperature, humidity } = req.body;
     if (moisture !== undefined) {
