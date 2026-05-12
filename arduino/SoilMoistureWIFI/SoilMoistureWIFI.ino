@@ -16,6 +16,7 @@ DHT dht(DHT_PIN, DHT_TYPE);
 
 void setup() {
   Serial.begin(115200);
+  pinMode(DHT_PIN, INPUT_PULLUP); // Use internal pull-up, no external resistor needed
   dht.begin();
 
   WiFi.begin(ssid, password);
