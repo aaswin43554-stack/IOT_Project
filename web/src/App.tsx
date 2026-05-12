@@ -244,8 +244,8 @@ function App() {
 
                         // Status helpers
                         const moistureStatus = m === undefined ? 'OK'
-                            : m >= 3500 ? 'CRITICAL'   // Very dry
-                            : m >= 2500 ? 'WARN'        // Getting dry
+                            : m >= 300 ? 'CRITICAL'     // Very dry
+                            : m >= 200 ? 'WARN'         // Getting dry
                             : 'OK';                     // Good moisture
 
                         const tempStatus = t === undefined ? 'OK'

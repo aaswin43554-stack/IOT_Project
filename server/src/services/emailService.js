@@ -58,7 +58,7 @@ async function sendCriticalMoistureAlert(moistureRaw) {
       <div style="margin:24px 0;padding:20px;background:#1e293b;border-radius:8px;border-left:4px solid #ef4444;text-align:center;">
         <div style="font-size:14px;color:#94a3b8;">Raw Sensor Reading</div>
         <div style="font-size:48px;font-weight:bold;color:#ef4444;">${moistureRaw}</div>
-        <div style="font-size:13px;color:#94a3b8;">out of 4095 (Very Dry — Above 3500 threshold)</div>
+        <div style="font-size:13px;color:#94a3b8;">out of 4095 (Very Dry — Above 300 threshold)</div>
       </div>
       <p>⚠️ <strong>Immediate irrigation is recommended</strong> to prevent crop stress.</p>
       <p style="margin-top:24px;color:#94a3b8;font-size:13px;">This is an automated alert from your Soil Health Intelligence system.</p>
