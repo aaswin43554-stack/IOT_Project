@@ -43,6 +43,17 @@ app.use('/api/alerts', alertsRouter);
 app.use('/api/replay', replayRouter);
 app.use('/api/recommendation', recommendationRouter);
 
+app.post('/api/sensor', (req, res) => {
+    const { moisture } = req.body;
+    if (moisture !== undefined) {
+        console.log('Received live moisture from ESP32:', moisture);
+        io.emit('sensorData', { moisture });
+        res.status(200).json({ success: true, message: 'Data received and broadcasted' });
+    } else {
+        res.status(400).json({ success: false, message: 'Missing moisture value' });
+    }
+});
+
 // Serve static frontend in production
 app.use(express.static(path.join(__dirname, '../../web/dist')));
 

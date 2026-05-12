@@ -93,9 +93,21 @@ function App() {
             setAlerts((prev) => [alert, ...prev])
         })
 
+        socket.on('sensorData', (data) => {
+            console.log('Received live ESP32 sensorData:', data);
+            const raw = Number(data.moisture);
+            const pct = Math.max(0, Math.min(100, (raw / 4095) * 100)); // Convert 0-4095 to 0-100%
+            setCurrentReading((prev: any) => prev ? {
+                ...prev,
+                soilMoisturePct: Number(pct.toFixed(1)),
+                ts: new Date().toISOString()
+            } : null);
+        })
+
         return () => {
             socket.off('reading')
             socket.off('alert')
+            socket.off('sensorData')
         }
     }, [])
 
