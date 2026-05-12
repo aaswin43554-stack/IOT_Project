@@ -232,16 +232,68 @@ function App() {
                 </header>
 
                 <section className="stats-grid">
-                    {[
-                        { label: 'Soil Moisture (Raw)', value: currentReading?.rawMoisture !== undefined ? currentReading.rawMoisture : (currentReading?.soilMoisturePct !== undefined ? currentReading.soilMoisturePct : '--'), icon: <Droplets />, color: '#3b82f6', status: 'OK' },
-                        { label: 'Air Temperature', value: currentReading?.airTempC !== undefined ? `${Number(currentReading.airTempC).toFixed(1)}°C` : '--', icon: <Thermometer />, color: '#ef4444', status: 'OK' },
-                        { label: 'Air Humidity', value: currentReading?.humidityPct !== undefined ? `${Number(currentReading.humidityPct).toFixed(1)}%` : '--', icon: <Wind />, color: '#10b981', status: (currentReading?.humidityPct < 30 || currentReading?.humidityPct > 80) ? 'WARN' : 'OK' },
-                        { label: 'Soil pH', value: currentReading?.ph?.toFixed(1) || '--', icon: <FlaskConical />, color: '#a855f7', status: currentReading?.ph < 5.5 || currentReading?.ph > 7.5 ? 'WARN' : 'OK' },
-                        { label: 'Salinity (EC)', value: `${currentReading?.ecDsM?.toFixed(2) || '--'} dS/m`, icon: <Waves />, color: '#f59e0b', status: currentReading?.ecDsM > 2.0 ? 'CRITICAL' : 'OK' },
-                        { label: 'Nitrogen (N)', value: `${currentReading?.nitrogen?.toFixed(0) || '--'} mg/kg`, icon: <Leaf />, color: '#34d399', status: currentReading?.nitrogen < 20 ? 'WARN' : 'OK' },
-                        { label: 'Phosphorus (P)', value: `${currentReading?.phosphorus?.toFixed(0) || '--'} mg/kg`, icon: <Activity />, color: '#fb923c', status: currentReading?.phosphorus < 10 ? 'WARN' : 'OK' },
-                        { label: 'Potassium (K)', value: `${currentReading?.potassium?.toFixed(0) || '--'} mg/kg`, icon: <Trees />, color: '#60a5fa', status: currentReading?.potassium < 40 ? 'WARN' : 'OK' },
-                    ].map((stat, i) => (
+                    {(() => {
+                        const m   = currentReading?.rawMoisture ?? currentReading?.soilMoisturePct;
+                        const t   = currentReading?.airTempC;
+                        const h   = currentReading?.humidityPct;
+                        const ph  = currentReading?.ph;
+                        const ec  = currentReading?.ecDsM;
+                        const n   = currentReading?.nitrogen;
+                        const p   = currentReading?.phosphorus;
+                        const k   = currentReading?.potassium;
+
+                        // Status helpers
+                        const moistureStatus = m === undefined ? 'OK'
+                            : m >= 3500 ? 'CRITICAL'   // Very dry
+                            : m >= 2500 ? 'WARN'        // Getting dry
+                            : 'OK';                     // Good moisture
+
+                        const tempStatus = t === undefined ? 'OK'
+                            : t > 40 ? 'CRITICAL'
+                            : t > 35 ? 'WARN'
+                            : 'OK';
+
+                        const humidStatus = h === undefined ? 'OK'
+                            : (h < 20 || h > 90) ? 'CRITICAL'
+                            : (h < 35 || h > 80) ? 'WARN'
+                            : 'OK';
+
+                        const phStatus = ph === undefined ? 'OK'
+                            : (ph < 4.5 || ph > 8.5) ? 'CRITICAL'
+                            : (ph < 5.5 || ph > 7.5) ? 'WARN'
+                            : 'OK';
+
+                        const ecStatus = ec === undefined ? 'OK'
+                            : ec > 2.5 ? 'CRITICAL'
+                            : ec > 1.8 ? 'WARN'
+                            : 'OK';
+
+                        const nStatus = n === undefined ? 'OK'
+                            : n < 15 ? 'CRITICAL'
+                            : n < 40 ? 'WARN'
+                            : 'OK';
+
+                        const pStatus = p === undefined ? 'OK'
+                            : p < 8  ? 'CRITICAL'
+                            : p < 20 ? 'WARN'
+                            : 'OK';
+
+                        const kStatus = k === undefined ? 'OK'
+                            : k < 20 ? 'CRITICAL'
+                            : k < 50 ? 'WARN'
+                            : 'OK';
+
+                        return [
+                            { label: 'Soil Moisture (Raw)', value: m !== undefined ? m : '--',                                                              icon: <Droplets />,    color: '#3b82f6', status: moistureStatus },
+                            { label: 'Air Temperature',     value: t !== undefined ? `${Number(t).toFixed(1)}°C` : '--',                                    icon: <Thermometer />, color: '#ef4444', status: tempStatus    },
+                            { label: 'Air Humidity',        value: h !== undefined ? `${Number(h).toFixed(1)}%` : '--',                                     icon: <Wind />,        color: '#10b981', status: humidStatus   },
+                            { label: 'Soil pH',             value: ph !== undefined ? Number(ph).toFixed(1) : '--',                                         icon: <FlaskConical />,color: '#a855f7', status: phStatus      },
+                            { label: 'Salinity (EC)',       value: ec !== undefined ? `${Number(ec).toFixed(2)} dS/m` : '--',                               icon: <Waves />,       color: '#f59e0b', status: ecStatus      },
+                            { label: 'Nitrogen (N)',        value: n  !== undefined ? `${Number(n).toFixed(0)} mg/kg` : '--',                               icon: <Leaf />,        color: '#34d399', status: nStatus       },
+                            { label: 'Phosphorus (P)',      value: p  !== undefined ? `${Number(p).toFixed(0)} mg/kg` : '--',                               icon: <Activity />,    color: '#fb923c', status: pStatus       },
+                            { label: 'Potassium (K)',       value: k  !== undefined ? `${Number(k).toFixed(0)} mg/kg` : '--',                               icon: <Trees />,       color: '#60a5fa', status: kStatus       },
+                        ];
+                    })().map((stat, i) => (
                         <div key={i} className="stat-card">
                             <div className="stat-header">
                                 <div className="icon-box" style={{ background: `${stat.color}22`, color: stat.color }}>{stat.icon}</div>
