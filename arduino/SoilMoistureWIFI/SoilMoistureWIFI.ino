@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
-const char *ssid = "Airtel_Aswin's Wifi";
+const char *ssid = "Aswin";
 const char *password = "Aswin@2k06";
 const char *serverName = "https://iot-project-vei9.onrender.com/api/sensor";
 
